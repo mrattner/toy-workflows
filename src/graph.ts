@@ -8,6 +8,16 @@ type GraphNode = {
 };
 type Graph = Record<string, GraphNode>;
 
+const formatter = new Intl.DateTimeFormat('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    fractionalSecondDigits: 3,
+    timeZone: 'America/Los_Angeles',
+    hour12: false,
+});
+const stringify = (date: Date) => `[${formatter.format(date)}]`;
+
 class GraphWalker {
     constructor(
         private readonly graph: Graph,
@@ -17,9 +27,9 @@ class GraphWalker {
 
     public async walk(): Promise<void> {
         await this.sleep(2000);
-        this.logger.log('Hello, World');
+        this.logger.log(stringify(new Date()), 'Hello, World');
         await this.sleep(5000);
-        this.logger.error('Goodbye, World');
+        this.logger.error(stringify(new Date()), 'Goodbye, World');
     }
 }
 

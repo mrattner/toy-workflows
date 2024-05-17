@@ -3,7 +3,7 @@ import Path from 'node:path';
 import { PassThrough } from 'node:stream';
 import { main } from '../src/graph';
 
-const fakeNow = new Date('2023-05-21T16:00:00.000Z');
+const fakeNow = new Date('2023-05-21T16:00:00.000-07:00');
 const logger = new Console(new PassThrough(), new PassThrough());
 
 async function sleep<T = void>(milliseconds?: number): Promise<T> {
@@ -37,7 +37,11 @@ describe('graph.main', () => {
     it('prints to stdout and stderr with fake timer', async () => {
         await main(testFile('simple.json'), logger, sleep);
 
-        expect(error.calls.allArgs()).toEqual([['Goodbye, World']]);
-        expect(log.calls.allArgs()).toEqual([['Hello, World']]);
+        expect(error.calls.allArgs()).toEqual([
+            ['[16:00:07.000]', 'Goodbye, World'],
+        ]);
+        expect(log.calls.allArgs()).toEqual([
+            ['[16:00:02.000]', 'Hello, World'],
+        ]);
     });
 });
