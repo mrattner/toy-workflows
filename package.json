@@ -1,0 +1,35 @@
+{
+    "name": "toy-workflows",
+    "version": "1.0.0",
+    "description": "Workflow runner exercise",
+    "engines": {
+        "node": ">=18 <=20",
+        "npm": ">=8"
+    },
+    "main": "index.js",
+    "scripts": {
+        "clean": "tsc --build --clean",
+        "compile": "tsc --build",
+        "prettier-watch": "onchange '**/*.{js,ts,json,md}' --exclude-path .gitignore -- npx prettier --write --ignore-unknown {{changed}}",
+        "start": "node index.js",
+        "test": "jasmine"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mrattner/toy-workflows.git"
+    },
+    "author": "M. Rattner",
+    "license": "MIT",
+    "dependencies": {
+        "jasmine": "^5.1.0",
+        "typescript": "^5.4.5"
+    },
+    "devDependencies": {
+        "@types/jasmine": "^5.1.4",
+        "@types/node": "^20.12.12"
+    },
+    "optionalDependencies": {
+        "onchange": "^7.1.0",
+        "prettier": "^3.2.5"
+    }
+}
