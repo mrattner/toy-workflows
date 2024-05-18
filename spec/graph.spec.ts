@@ -54,6 +54,32 @@ describe('graph.main', () => {
         });
     });
 
+    describe('semantic errors', () => {
+        it('throws error when more than one root node in graph', async () => {
+            await expectAsync(
+                main(testFile('err_extra-root.json'), logger, sleep),
+            ).toBeRejectedWithError(/more than one root/);
+        });
+
+        it('throws error when "edges" is not an object', async () => {
+            await expectAsync(
+                main(testFile('err_invalid-edges.json'), logger, sleep),
+            ).toBeRejectedWithError(/"edges"/);
+        });
+
+        it('throws error when edge has negative weight', async () => {
+            await expectAsync(
+                main(testFile('err_negative-edge.json'), logger, sleep),
+            ).toBeRejectedWithError(/negative/);
+        });
+
+        it('throws error when edge refers to nonexistent node', async () => {
+            await expectAsync(
+                main(testFile('err_nonexistent-node.json'), logger, sleep),
+            ).toBeRejectedWithError(/"D" does not exist/);
+        });
+    });
+
     describe('simple graphs', () => {
         it('prints nothing for empty graph', async () => {
             await main(testFile('no-nodes.json'), logger, sleep);
