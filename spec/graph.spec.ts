@@ -174,4 +174,109 @@ describe('graph.main', () => {
             ]);
         });
     });
+
+    describe('graph example 2', () => {
+        beforeEach(async () => {
+            await main(testFile('fancy-graph.json'), logger, sleep);
+        });
+
+        it('visits nodes the correct number of times', () => {
+            expect(error).not.toHaveBeenCalled();
+            expect(log).toHaveBeenCalledTimes(18);
+        });
+
+        it('takes 12 seconds to run', () => {
+            expect(new Date().getTime() / 1000).toBeCloseTo(
+                (fakeNow.getTime() + 12000) / 1000,
+            );
+        });
+
+        it('prints root immediately', () => {
+            expect(log.calls.argsFor(0)).toEqual(['[16:00:00.000]', 'A']);
+        });
+
+        it('prints B2 after 1 second', () => {
+            expect(log.calls.argsFor(1)).toEqual([
+                jasmine.stringContaining('16:00:01'),
+                'B2',
+            ]);
+        });
+
+        it('prints C4 after 2 seconds', () => {
+            expect(log.calls.argsFor(2)).toEqual([
+                jasmine.stringContaining('16:00:02'),
+                'C4',
+            ]);
+        });
+
+        it('prints B3, C5, and C6 after 5 seconds', () => {
+            const nodes = log.calls.allArgs().slice(3, 6);
+            const fiveSeconds = jasmine.stringContaining('16:00:05');
+
+            expect(nodes).toContain([fiveSeconds, 'B3']);
+            expect(nodes).toContain([fiveSeconds, 'C5']);
+            expect(nodes).toContain([fiveSeconds, 'C6']);
+        });
+
+        it('prints C7 after 6 seconds', () => {
+            expect(log.calls.argsFor(6)).toEqual([
+                jasmine.stringContaining('16:00:06'),
+                'C7',
+            ]);
+        });
+
+        it('prints B1 and C8 after 7 seconds', () => {
+            const nodes = log.calls.allArgs().slice(7, 9);
+            const sevenSeconds = jasmine.stringContaining('16:00:07');
+
+            expect(nodes).toContain([sevenSeconds, 'B1']);
+            expect(nodes).toContain([sevenSeconds, 'C8']);
+        });
+
+        it('prints B3 and C2 after 8 seconds', () => {
+            const nodes = log.calls.allArgs().slice(9, 11);
+            const eightSeconds = jasmine.stringContaining('16:00:08');
+
+            expect(nodes).toContain([eightSeconds, 'B3']);
+            expect(nodes).toContain([eightSeconds, 'C2']);
+        });
+
+        it('prints C7 twice, and C3 after 9 seconds', () => {
+            const nodes = log.calls.allArgs().slice(11, 14);
+
+            expect(nodes).toContain([
+                jasmine.stringContaining('16:00:09'),
+                'C3',
+            ]);
+
+            const c7Count = nodes.reduce((count, next) => {
+                return /\[16:00:09\.\d{3}\]/.test(next[0]) && next[1] === 'C7'
+                    ? count + 1
+                    : count;
+            }, 0);
+            expect(c7Count).toEqual(2);
+        });
+
+        it('prints C1 and C8 after 10 seconds', () => {
+            const nodes = log.calls.allArgs().slice(14, 16);
+            const tenSeconds = jasmine.stringContaining('16:00:10');
+
+            expect(nodes).toContain([tenSeconds, 'C1']);
+            expect(nodes).toContain([tenSeconds, 'C8']);
+        });
+
+        it('prints C4 after 11 seconds', () => {
+            expect(log.calls.argsFor(16)).toEqual([
+                jasmine.stringContaining('16:00:11'),
+                'C4',
+            ]);
+        });
+
+        it('prints C7 after 12 seconds', () => {
+            expect(log.calls.argsFor(17)).toEqual([
+                jasmine.stringContaining('16:00:12'),
+                'C7',
+            ]);
+        });
+    });
 });
