@@ -26,10 +26,7 @@ class GraphWalker {
     ) {}
 
     public async walk(): Promise<void> {
-        await this.sleep(2000);
-        this.logger.log(stringify(new Date()), 'Hello, World');
-        await this.sleep(5000);
-        this.logger.error(stringify(new Date()), 'Goodbye, World');
+        // TODO
     }
 }
 

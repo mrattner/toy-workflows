@@ -34,14 +34,38 @@ describe('graph.main', () => {
         jasmine.clock().uninstall();
     });
 
-    it('prints to stdout and stderr with fake timer', async () => {
-        await main(testFile('simple.json'), logger, sleep);
+    describe('simple graphs', () => {
+        it('prints nothing for empty graph', async () => {
+            await main(testFile('no-nodes.json'), logger, sleep);
 
-        expect(error.calls.allArgs()).toEqual([
-            ['[16:00:07.000]', 'Goodbye, World'],
-        ]);
-        expect(log.calls.allArgs()).toEqual([
-            ['[16:00:02.000]', 'Hello, World'],
-        ]);
+            expect(error).not.toHaveBeenCalled();
+            expect(log).not.toHaveBeenCalled();
+        });
+
+        it('prints only the root for graph with 1 node', async () => {
+            await main(testFile('one-node.json'), logger, sleep);
+
+            expect(error).not.toHaveBeenCalled();
+            expect(log.calls.allArgs()).toEqual([['[16:00:00.000]', 'A']]);
+        });
+
+        describe('graph with 3 nodes and all different edge weights', () => {
+            beforeEach(async () => {
+                await main(testFile('simple.json'), logger, sleep);
+            });
+
+            it('takes 7 seconds to run', () => {
+                expect(new Date().getTime() / 1000).toBeCloseTo((fakeNow.getTime() + 7000));
+            });
+
+            it('prints the nodes in order', () => {
+                expect(error).not.toHaveBeenCalled();
+                expect(log.calls.allArgs()).toEqual([
+                    ['[16:00:00.000]', 'A'],
+                    [jasmine.stringContaining('16:00:05'), 'B'],
+                    [jasmine.stringContaining('16:00:07'), 'C'],
+                ]);
+            });
+        });
     });
 });
