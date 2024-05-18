@@ -34,6 +34,26 @@ describe('graph.main', () => {
         jasmine.clock().uninstall();
     });
 
+    describe('syntax errors', () => {
+        it('throws error when input file does not exist', async () => {
+            await expectAsync(
+                main(testFile('nonexistent'), logger, sleep),
+            ).toBeRejectedWithError(/no such file or directory/);
+        });
+
+        it('throws error when input is not JSON', async () => {
+            await expectAsync(
+                main(testFile('err_not-json.txt'), logger, sleep),
+            ).toBeRejectedWithError(/JSON/);
+        });
+
+        it('throws error when input graph has no root node', async () => {
+            await expectAsync(
+                main(testFile('err_no-root.json'), logger, sleep),
+            ).toBeRejectedWithError(/"start"/);
+        });
+    });
+
     describe('simple graphs', () => {
         it('prints nothing for empty graph', async () => {
             await main(testFile('no-nodes.json'), logger, sleep);
