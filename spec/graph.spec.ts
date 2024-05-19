@@ -6,8 +6,8 @@ import { main } from '../src/graph';
 const fakeNow = new Date('2023-05-21T16:00:00.000-07:00');
 const logger = new Console(new PassThrough(), new PassThrough());
 
-async function sleep<T = void>(milliseconds?: number): Promise<T> {
-    jasmine.clock().tick(milliseconds ?? 0);
+function sleep<T = void>(milliseconds?: number): Promise<T> {
+    jasmine.clock().tick(milliseconds ?? 1);
     return Promise.resolve(undefined as T);
 }
 

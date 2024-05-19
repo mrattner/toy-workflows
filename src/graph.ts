@@ -7,6 +7,11 @@ type GraphNode = {
     edges: Record<string, number>;
 };
 type Graph = Record<string, GraphNode>;
+type NodeVisit = {
+    name: string;
+    ttl: number;
+    nextNodes: [string, number][];
+};
 
 const formatter = new Intl.DateTimeFormat('en-US', {
     hour: '2-digit',
@@ -26,7 +31,40 @@ class GraphWalker {
     ) {}
 
     public async walk(): Promise<void> {
-        // TODO
+        const nodes = Object.entries(this.graph);
+        const root = nodes?.find(([, { start }]) => Boolean(start));
+        if (!root) {
+            return;
+        }
+        const toVisit: NodeVisit[] = [
+            {
+                name: root[0],
+                nextNodes: Object.entries(root[1].edges),
+                ttl: Date.now(),
+            },
+        ];
+        while (toVisit.length > 0) {
+            const nextNode = toVisit.pop()!;
+            const now = new Date();
+            const { name, ttl, nextNodes } = nextNode;
+            if (now.getTime() < ttl) {
+                toVisit.unshift(nextNode);
+                await this.sleep();
+                continue;
+            }
+            this.logger.log(stringify(now), name);
+            for (const [nextName, waitSeconds] of nextNodes) {
+                const nextToVisit = this.graph[nextName].edges;
+                if (typeof nextToVisit !== 'object') {
+                    return;
+                }
+                toVisit.unshift({
+                    name: nextName,
+                    ttl: now.getTime() + waitSeconds * 1000,
+                    nextNodes: Object.entries(nextToVisit),
+                });
+            }
+        }
     }
 }
 
