@@ -23,6 +23,21 @@ const formatter = new Intl.DateTimeFormat('en-US', {
 });
 const stringify = (date: Date) => `[${formatter.format(date)}]`;
 
+function validEdges(edges: unknown): NodeVisit['nextNodes'] {
+    if (typeof edges !== 'object' || !edges) {
+        throw new Error('"edges" property of each node must be an object');
+    }
+    return Object.entries(edges).filter(([edge, weight]) => {
+        if (typeof weight !== 'number') {
+            return false;
+        }
+        if (weight < 0) {
+            throw new Error(`Edge weight for ${edge} is negative`);
+        }
+        return true;
+    });
+}
+
 class GraphWalker {
     constructor(
         private readonly graph: Graph,
@@ -42,7 +57,7 @@ class GraphWalker {
         const toVisit: NodeVisit[] = [
             {
                 name: root[0],
-                nextNodes: Object.entries(root[1].edges),
+                nextNodes: validEdges(root[1].edges),
                 ttl: Date.now(),
             },
         ];
@@ -57,7 +72,7 @@ class GraphWalker {
             }
             this.logger.log(stringify(now), name);
             for (const [nextName, waitSeconds] of nextNodes) {
-                const nextToVisit = this.validateEdges(nextName);
+                const nextToVisit = this.validateNode(nextName);
                 toVisit.unshift({
                     name: nextName,
                     ttl: now.getTime() + waitSeconds * 1000,
@@ -67,16 +82,17 @@ class GraphWalker {
         }
     }
 
-    private validateEdges(nodeName: string): GraphNode['edges'] {
+    private validateNode(nodeName: string): GraphNode['edges'] {
         if (!(nodeName in this.graph)) {
             throw new Error(`Node "${nodeName}" does not exist`);
         }
-        const edges = this.graph[nodeName].edges;
-        if (typeof edges !== 'object') {
+        const { edges, start } = this.graph[nodeName];
+        if (start) {
             throw new Error(
-                `Node ${nodeName} "edges" property is not an object`,
+                `Graph may not contain more than one root: ${nodeName}`,
             );
         }
+        validEdges(edges);
         return edges;
     }
 }
