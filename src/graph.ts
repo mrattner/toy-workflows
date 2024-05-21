@@ -33,8 +33,11 @@ class GraphWalker {
     public async walk(): Promise<void> {
         const nodes = Object.entries(this.graph);
         const root = nodes?.find(([, { start }]) => Boolean(start));
-        if (!root) {
+        if (nodes.length === 0) {
             return;
+        }
+        if (!root) {
+            throw new Error('Must have node with "start": true');
         }
         const toVisit: NodeVisit[] = [
             {
@@ -54,10 +57,7 @@ class GraphWalker {
             }
             this.logger.log(stringify(now), name);
             for (const [nextName, waitSeconds] of nextNodes) {
-                const nextToVisit = this.graph[nextName].edges;
-                if (typeof nextToVisit !== 'object') {
-                    return;
-                }
+                const nextToVisit = this.validateEdges(nextName);
                 toVisit.unshift({
                     name: nextName,
                     ttl: now.getTime() + waitSeconds * 1000,
@@ -65,6 +65,19 @@ class GraphWalker {
                 });
             }
         }
+    }
+
+    private validateEdges(nodeName: string): GraphNode['edges'] {
+        if (!(nodeName in this.graph)) {
+            throw new Error(`Node "${nodeName}" does not exist`);
+        }
+        const edges = this.graph[nodeName].edges;
+        if (typeof edges !== 'object') {
+            throw new Error(
+                `Node ${nodeName} "edges" property is not an object`,
+            );
+        }
+        return edges;
     }
 }
 
